@@ -32,9 +32,12 @@ connection.connect((err) => {
       return;
     }
     console.log(data);
+
+    promptUser().catch((err) => console.error(err));
   });
-  queryAllDepartments();
-  queryAllTitles();
+
+  //   queryAllDepartments();
+  //   queryAllTitles();
 });
 
 // function to view all employees
@@ -68,3 +71,42 @@ function queryAllTitles() {
 // function sqlInsertRole() {
 //     strSql =
 // }
+
+const promptUser = () =>
+  inquirer
+    .prompt([
+      {
+        type: "list",
+        name: "action",
+        message: "What would you like to do?",
+        choices: [
+          "View All Employees",
+          "View All Employees by Department",
+          "View All Employees My Manager",
+          "View All Roles",
+          "View All Departments",
+          "Add Employee",
+          "Remove Employee",
+          "Update Employee Role",
+          "Update Employee Manager",
+          "View All Roles",
+        ],
+      },
+    ])
+    .then((answers) => {
+      console.log(answers);
+      // if (answers.action === "View All Employees"){
+      //     queryAllEmployees()
+      // } else
+      switch (answers.action) {
+        case "View All Employees":
+          queryAllEmployees();
+          break;
+        case "View All Departments":
+          queryAllDepartments();
+          break;
+        case "View All Titles":
+          queryAllTitles();
+          break;
+      }
+    });
