@@ -2,6 +2,7 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
 const asTable = require("as-table");
+const figlet = require("figlet");
 
 // const app = express();
 // const PORT = process.env.PORT || 8080;
@@ -23,6 +24,15 @@ connection.connect((err) => {
   }
   console.log("connected as id: " + connection.threadId);
   //   queryAllEmployees();
+
+  figlet("Employee Manager", (err, data) => {
+    if (err) {
+      console.log("Something when wrong with figlet");
+      console.dir(err);
+      return;
+    }
+    console.log(data);
+  });
   queryAllDepartments();
   queryAllTitles();
 });
@@ -56,5 +66,5 @@ function queryAllTitles() {
 
 //function add new roles
 // function sqlInsertRole() {
-//     strSql = 
+//     strSql =
 // }
