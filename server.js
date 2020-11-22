@@ -46,6 +46,7 @@ function queryAllEmployees() {
   connection.query(sqlAllEmp, (err, res) => {
     if (err) throw err;
     console.table(asTable(res));
+    promptUser();
   });
 }
 
@@ -55,6 +56,7 @@ function queryAllDepartments() {
   connection.query(qryAllDepartments, (err, res) => {
     if (err) throw err;
     console.table(asTable(res));
+    promptUser();
   });
 }
 
@@ -64,6 +66,7 @@ function queryAllTitles() {
   connection.query(qryAllTitles, (err, res) => {
     if (err) throw err;
     console.table(asTable(res));
+    promptUser();
   });
 }
 
@@ -72,6 +75,10 @@ function queryAllTitles() {
 //     strSql =
 // }
 
+function exitProgram() {
+  process.exit();
+  connection.end();
+}
 const promptUser = () =>
   inquirer
     .prompt([
@@ -89,7 +96,7 @@ const promptUser = () =>
           "Remove Employee",
           "Update Employee Role",
           "Update Employee Manager",
-          "View All Roles",
+          "Exit",
         ],
       },
     ])
@@ -108,5 +115,7 @@ const promptUser = () =>
         case "View All Titles":
           queryAllTitles();
           break;
+        case "Exit":
+          exitProgram();
       }
     });
