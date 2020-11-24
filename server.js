@@ -3,6 +3,7 @@ const mysql = require("mysql");
 const inquirer = require("inquirer");
 const asTable = require("as-table");
 const figlet = require("figlet");
+const testArray = ["Ronnie", "Bobby", "Ricky", "Mike"];
 
 // const app = express();
 // const PORT = process.env.PORT || 8080;
@@ -25,35 +26,55 @@ connection.connect((err) => {
   console.log("connected as id: " + connection.threadId);
   //   queryAllEmployees();
 
-  figlet("Employee Manager", (err, data) => {
-    if (err) {
-      console.log("Something when wrong with figlet");
-      console.dir(err);
-      return;
+  figlet(
+    "Employee Manager",
+    {
+      verticalLayout: "full",
+      horizontalLayout: "full",
+      width: 80,
+      whitespaceBreak: true,
+    },
+    (err, data) => {
+      if (err) {
+        console.log("Something when wrong with figlet");
+        console.dir(err);
+        return;
+      }
+      console.log(data);
+
+      programStart();
+      // promptUser().catch((err) => console.error(err));
     }
-    console.log(data);
-
-    promptUser().catch((err) => console.error(err));
-  });
-
-  //   queryAllDepartments();
-  //   queryAllTitles();
+  );
 });
 
 // function to view all employees
-function queryAllEmployees() {
-  const sqlAllEmp = "SELECT * FROM V_VIEW_EMPLOYEES;";
-  connection.query(sqlAllEmp, (err, res) => {
+function viewEmployees() {
+  let sql = "SELECT * FROM V_VIEW_EMPLOYEES;";
+  connection.query(sql, (err, res) => {
     if (err) throw err;
     console.table(asTable(res));
+    programStart();
+  });
+}
+
+// get manager list
+
+function viewMgrs() {
+  let sql =
+    "SELECT Distinct manager_id, manager FROM V_VIEW_EMPLOYEES order by manager";
+  connection.query(sql, (err, res) => {
+    if (err) throw err;
+    console.table(asTable(res));
+    console.log(res);
+    //return JSON.parse(res);
     promptUser();
   });
 }
 
-// function to view all departments
-function queryAllDepartments() {
-  const qryAllDepartments = "Select * from tblDepartment;";
-  connection.query(qryAllDepartments, (err, res) => {
+function viewDepts() {
+  let sql = "Select * from tblDepartment order by name;";
+  connection.query(sql, (err, res) => {
     if (err) throw err;
     console.table(asTable(res));
     promptUser();
@@ -61,25 +82,45 @@ function queryAllDepartments() {
 }
 
 // function to view all Titles
-function queryAllTitles() {
-  const qryAllTitles = "Select * from tblRole;";
-  connection.query(qryAllTitles, (err, res) => {
+function viewTitles() {
+  let sql = "Select * from tblRole;";
+  connection.query(sql, (err, res) => {
     if (err) throw err;
     console.table(asTable(res));
     promptUser();
   });
 }
 
-//function add new roles
-// function sqlInsertRole() {
-//     strSql =
-// }
+addEmp = () => {};
 
-function exitProgram() {
+removeEmp = () => {};
+
+updateEmpMgr = () => {
+  let sql =
+    "select employeename as name, employeeid as value from v_view_employees order by employeename;";
+  connection.query(sql, (err, res) => {
+    if (err) throw err;
+
+    inquirer.prompt({
+      type: "list",
+      name: "employees",
+      message: "Select Employee Whose Manager You Would Like To Update.",
+      choices: () => {
+        let choicesArray = [];
+        for (let i = 0; i < res.length; i++) {
+          choicesArray.push(res[i]);
+        }
+        return choicesArray;
+      },
+    });
+  });
+};
+
+function programExit() {
   process.exit();
   connection.end();
 }
-const promptUser = () =>
+programStart = () =>
   inquirer
     .prompt([
       {
@@ -87,11 +128,12 @@ const promptUser = () =>
         name: "action",
         message: "What would you like to do?",
         choices: [
-          "View All Employees",
-          "View All Employees by Department",
-          "View All Employees My Manager",
-          "View All Roles",
-          "View All Departments",
+          "View Employees",
+          "View Employees by Department",
+          "View Employees My Manager",
+          "View Departments",
+          "View Managers",
+          "View Titles",
           "Add Employee",
           "Remove Employee",
           "Update Employee Role",
@@ -101,21 +143,38 @@ const promptUser = () =>
       },
     ])
     .then((answers) => {
-      console.log(answers);
-      // if (answers.action === "View All Employees"){
-      //     queryAllEmployees()
-      // } else
       switch (answers.action) {
-        case "View All Employees":
-          queryAllEmployees();
+        case "View Employees":
+          viewEmployees();
           break;
-        case "View All Departments":
-          queryAllDepartments();
+        case "View Employees By Department":
+          viewEmpByDept();
           break;
-        case "View All Titles":
-          queryAllTitles();
+        case "View Employees by Manager":
+          viewEmpByDept();
+          break;
+        case "View Departments":
+          viewDepts();
+          break;
+        case "View Managers":
+          viewMgrs();
+          break;
+        case "View Titles":
+          viewTitles();
+          break;
+        case "Add Employee":
+          addEmp();
+          break;
+        case "Remove Employee":
+          removeEmp();
+          break;
+        case "Update Employee Title":
+          updateEmpTtl();
+          break;
+        case "Update Employee Manager":
+          updateEmpMgr();
           break;
         case "Exit":
-          exitProgram();
+          programExit();
       }
     });
