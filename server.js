@@ -43,7 +43,6 @@ connection.connect((err) => {
       console.log(data);
 
       programStart();
-      // promptUser().catch((err) => console.error(err));
     }
   );
 });
@@ -101,20 +100,72 @@ updateEmpMgr = () => {
   connection.query(sql, (err, res) => {
     if (err) throw err;
 
-    inquirer.prompt({
-      type: "list",
-      name: "employees",
-      message: "Select Employee Whose Manager You Would Like To Update.",
-      choices: () => {
-        let choicesArray = [];
-        for (let i = 0; i < res.length; i++) {
-          choicesArray.push(res[i]);
-        }
-        return choicesArray;
-      },
-    });
+    inquirer
+      .prompt({
+        type: "list",
+        name: "employees",
+        message: "Select Employee Whose Manager You Would Like To Update.",
+        choices: () => {
+          let choicesArray = [];
+          for (let i = 0; i < res.length; i++) {
+            choicesArray.push(res[i]);
+          }
+          return choicesArray;
+        },
+      })
+      .then((answer) => {
+        const empId = answer.employees;
+        console.log("EmployeeID select = " + empId);
+        selectManager(empId);
+      });
   });
 };
+
+function selectManager(empId) {
+  let sql =
+    "select distinct employeename as name , employeeid as value from employees_db.v_view_employees where title like '%manager%' order by name;";
+  connection.query(sql, (err, res) => {
+    if (err) throw err;
+    inquirer
+      .prompt({
+        type: "list",
+        name: "manager",
+        message: "Select New Manager",
+        choices: () => {
+          let choicesArray = [];
+          for (let i = 0; i < res.length; i++) {
+            choicesArray.push(res[i]);
+          }
+          return choicesArray;
+        },
+      })
+      .then((answer) => {
+        let mgrId = answer.manager;
+        console.log("Manager selected = " + mgrId);
+        setEmpMgr(empId, mgrId);
+      });
+  });
+}
+
+function setEmpMgr(empId, mgrId) {
+  let sql = "Update tblEmployees Set ? Where ?;";
+  connection.query(
+    sql,
+    [
+      {
+        manager_id: mgrId,
+      },
+      {
+        id: empId,
+      },
+    ],
+    (err) => {
+      if (err) throw err;
+      console.log("Employee Manager Updated Successfully!");
+      programStart();
+    }
+  );
+}
 
 function programExit() {
   process.exit();
