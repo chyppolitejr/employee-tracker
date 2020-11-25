@@ -6,7 +6,7 @@ const asTable = require("as-table").configure({
   delimiter: " | ",
 });
 const figlet = require("figlet");
-const testArray = ["Ronnie", "Bobby", "Ricky", "Mike"];
+const asyncWait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // const app = express();
 // const PORT = process.env.PORT || 8080;
@@ -210,9 +210,11 @@ insertNewEmp = () => {
             manager_id: answers.manager,
           },
         ],
-        (err, res) => {
+        (err) => {
           if (err) throw err;
+          console.log("\n");
           console.log("New Employee Has Been Added!");
+          console.log("\n");
           programStart();
         }
       );
@@ -280,6 +282,65 @@ updateEmpMgr = () => {
         const empId = answer.employees;
         console.log("EmployeeID select = " + empId);
         selectManager(empId);
+      });
+  });
+};
+
+updateEmployeeTitle = () => {
+  let sqlTitle =
+    "select id as value , title as name from tblRole order by name;";
+  let sqlEmpList =
+    "select employeeid as value, employeename as name from v_view_employees order by name;";
+  let titleArray = [];
+  let empArray = [];
+
+  //get list of titles for choice list and populate title array
+  connection.query(sqlTitle, (err, res) => {
+    if (err) throw err;
+    for (let i = 0; i < res.length; i++) {
+      titleArray.push(res[i]);
+    }
+  });
+  // get employee list
+  connection.query(sqlEmpList, (err, res) => {
+    if (err) throw err;
+    for (let i = 0; i < res.length; i++) {
+      empArray.push(res[i]);
+    }
+    inquirer
+      .prompt([
+        {
+          type: "list",
+          name: "employee",
+          message: "Select employee whose title needs to change",
+          choices: empArray,
+        },
+        {
+          type: "list",
+          name: "title",
+          message: "Select employee's new title.",
+          choices: titleArray,
+        },
+      ])
+      .then((answers) => {
+        let sqlUpdate = "UPDATE tblEmployees SET ? WHERE ?;";
+        connection.query(
+          sqlUpdate,
+          [
+            {
+              role_id: answers.title,
+            },
+            {
+              id: answers.employee,
+            },
+          ],
+          (err) => {
+            if (err) throw err;
+            console.log("Title Successfully Updated!");
+            console.log("\n");
+            programStart();
+          }
+        );
       });
   });
 };
@@ -352,7 +413,7 @@ programStart = () =>
           "View Titles",
           "Add Employee",
           "Remove Employee",
-          "Update Employee Role", //todo
+          "Update Employee Title", //todo
           "Update Employee Manager",
           "Exit",
         ],
@@ -386,7 +447,7 @@ programStart = () =>
           removeEmp();
           break;
         case "Update Employee Title":
-          updateEmpTtl();
+          updateEmployeeTitle();
           break;
         case "Update Employee Manager":
           updateEmpMgr();

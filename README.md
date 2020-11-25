@@ -6,6 +6,8 @@ CLI application for managing employees. Provides the ability view, add and updat
 
 ## Application Screenshot
 
+## Application Demo
+
 ## Technologies Used
 
 NodeJS, mySQL, Inquirer, NPM, Figlet, As-Table
