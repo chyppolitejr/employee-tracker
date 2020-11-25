@@ -93,37 +93,38 @@ function viewTitles() {
 
 //  view employees by selected department
 viewEmpByDept = () => {
-  let sql =
+  let sqlDeptList =
     "Select distinct department_id as value, department as name from v_view_employees order by name;";
   let deptArray = [];
-  connection.query(sql, (err, res) => {
+  connection.query(sqlDeptList, (err, res) => {
     if (err) throw err;
     for (let i = 0; i < res.length; i++) {
       deptArray.push(res[i]);
     }
+    inquirer
+      .prompt({
+        type: "list",
+        name: "department",
+        message: "Select department you would like to view",
+        choices: deptArray,
+      })
+      .then((answers) => {
+        let sqlSelect = "select * from v_view_employees where ?;";
+        connection.query(
+          sqlSelect,
+          [
+            {
+              department_id: answers.department,
+            },
+          ],
+          (err, res) => {
+            if (err) throw err;
+            console.table(asTable(res));
+            programStart();
+          }
+        );
+      });
   });
-  inquirer
-    .prompt({
-      type: "list",
-      name: "department",
-      message: "Select department you would like to view.",
-      choices: deptArray,
-    })
-    .then((answers) => {
-      let sqlSelect = "select * from v_view_employees where ?;";
-      connection.query(
-        sqlSelect,
-        [
-          {
-            department_id: answers.department,
-          },
-        ],
-        (err) => {
-          if (err) throw err;
-          programStart();
-        }
-      );
-    });
 };
 // functions for adding new employees
 insertNewEmp = () => {
@@ -320,8 +321,8 @@ programStart = () =>
         message: "What would you like to do?",
         choices: [
           "View Employees",
-          "View Employees by Department",
-          "View Employees My Manager",
+          "View Department Employees",
+          "View Employees by Manager",
           "View Departments",
           "View Managers",
           "View Titles",
@@ -338,8 +339,9 @@ programStart = () =>
         case "View Employees":
           viewEmployees();
           break;
-        case "View Employees By Department":
+        case "View Department Employees":
           viewEmpByDept();
+          //console.log("this case was reached");
           break;
         case "View Employees by Manager":
           viewEmpByMgr();
