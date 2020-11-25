@@ -430,7 +430,86 @@ function setEmpMgr(empId, mgrId) {
     }
   );
 }
+addDept = () => {
+  let sql = "Insert into tblDepartment SET ?;";
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        name: "department",
+        message: "Enter the new department name.",
+      },
+    ])
+    .then((answer) => {
+      connection.query(
+        sql,
+        [
+          {
+            name: answer.department,
+          },
+        ],
+        (err) => {
+          if (err) throw err;
+          console.log("\n");
+          console.log("New Department Added Successfully!");
+          console.log("\n");
+          viewDepts();
+        }
+      );
+    });
+};
 
+addTitle = () => {
+  let sqlDeptList =
+    "Select id as value, name from tblDepartment order by name;";
+  let deptArray = [];
+
+  connection.query(sqlDeptList, (err, res) => {
+    if (err) throw err;
+    for (let i = 0; i < res.length; i++) {
+      deptArray.push(res[i]);
+    }
+    inquirer
+      .prompt([
+        {
+          type: "input",
+          name: "title",
+          message: "Enter the new title:",
+        },
+        {
+          type: "number",
+          name: "salary",
+          message: "Enter salary for new title:",
+        },
+        {
+          type: "list",
+          name: "department",
+          message: "Department of new title:",
+          choices: deptArray,
+        },
+      ])
+      .then((answers) => {
+        let sqlInsert = " Insert Into tblRole Set ?";
+        connection.query(
+          sqlInsert,
+          [
+            {
+              title: answers.title,
+              salary: answers.salary,
+              department_id: answers.department,
+            },
+          ],
+          (err) => {
+            if (err) throw err;
+            console.log("\n");
+            console.log("New title has been added");
+            console.log("\n");
+            viewTitles();
+          }
+        );
+      });
+  });
+};
 function programExit() {
   process.exit();
   connection.end();
@@ -450,6 +529,8 @@ programStart = () =>
           "View Managers",
           "View Titles",
           "Add Employee",
+          "Add Title",
+          "Add Department",
           "Remove Employee",
           "Update Employee Title", //todo
           "Update Employee Manager",
@@ -489,6 +570,12 @@ programStart = () =>
           break;
         case "Update Employee Manager":
           updateEmpMgr();
+          break;
+        case "Add Title":
+          addTitle();
+          break;
+        case "Add Department":
+          addDept();
           break;
         case "Exit":
           programExit();
