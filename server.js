@@ -68,18 +68,18 @@ function viewMgrs() {
     console.table(asTable(res));
     console.log(res);
     //return JSON.parse(res);
-    promptUser();
+    programStart();
   });
 }
 
-function viewDepts() {
+viewDepts = () => {
   let sql = "Select * from tblDepartment order by name;";
   connection.query(sql, (err, res) => {
     if (err) throw err;
     console.table(asTable(res));
-    promptUser();
+    programStart();
   });
-}
+};
 
 // function to view all Titles
 function viewTitles() {
@@ -87,10 +87,44 @@ function viewTitles() {
   connection.query(sql, (err, res) => {
     if (err) throw err;
     console.table(asTable(res));
-    promptUser();
+    programStart();
   });
 }
 
+//  view employees by selected department
+viewEmpByDept = () => {
+  let sql =
+    "Select distinct department_id as value, department as name from v_view_employees order by name;";
+  let deptArray = [];
+  connection.query(sql, (err, res) => {
+    if (err) throw err;
+    for (let i = 0; i < res.length; i++) {
+      deptArray.push(res[i]);
+    }
+  });
+  inquirer
+    .prompt({
+      type: "list",
+      name: "department",
+      message: "Select department you would like to view.",
+      choices: deptArray,
+    })
+    .then((answers) => {
+      let sqlSelect = "select * from v_view_employees where ?;";
+      connection.query(
+        sqlSelect,
+        [
+          {
+            department_id: answers.department,
+          },
+        ],
+        (err) => {
+          if (err) throw err;
+          programStart();
+        }
+      );
+    });
+};
 // functions for adding new employees
 insertNewEmp = () => {
   let sqlTitle =
@@ -140,14 +174,6 @@ insertNewEmp = () => {
       },
     ])
     .then((answers) => {
-      //   console.log(answers);
-      //   insertNewEmp(
-      //     answers.firstName,
-      //     answers.lastName,
-      //     answers.title,
-      //     answers.manager
-      //   );
-
       let sqlInsert = "Insert tblEmployees SET ?;";
       connection.query(
         sqlInsert,
@@ -167,27 +193,6 @@ insertNewEmp = () => {
       );
     });
 };
-
-// function for final insert
-function insertNewEmp(firstName, lastName, roleId, managerId) {
-  let sqlInsert = "Insert tblEmployees SET ?;";
-  connection.query(
-    sqlInsert,
-    [
-      {
-        first_name: firstName,
-        last_name: lastName,
-        role_id: roleId,
-        manager_id: managerId,
-      },
-    ],
-    (err, res) => {
-      if (err) throw err;
-      console.log("New Employee Has Been Added!");
-      programStart();
-    }
-  );
-}
 
 // function to delete selected employee
 removeEmp = () => {
@@ -337,7 +342,7 @@ programStart = () =>
           viewEmpByDept();
           break;
         case "View Employees by Manager":
-          viewEmpByDept();
+          viewEmpByMgr();
           break;
         case "View Departments":
           viewDepts();
