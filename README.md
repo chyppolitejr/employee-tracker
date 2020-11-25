@@ -7,7 +7,10 @@ CLI application for managing employees. Provides the ability view, add and updat
 ## Application Screenshot
 
 <img src="./media/employee-tracker-screenshot.png" alt="application screenshot">
+
 ## Application Demo
+
+https://youtu.be/bGDRVGsK074
 
 ## Technologies Used
 
