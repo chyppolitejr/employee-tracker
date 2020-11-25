@@ -1,7 +1,10 @@
 // const express = require("express");
 const mysql = require("mysql");
 const inquirer = require("inquirer");
-const asTable = require("as-table");
+const asTable = require("as-table").configure({
+  titel: (x) => x.bright,
+  delimiter: " | ",
+});
 const figlet = require("figlet");
 const testArray = ["Ronnie", "Bobby", "Ricky", "Mike"];
 
@@ -42,7 +45,7 @@ connection.connect((err) => {
         return;
       }
       console.log(data);
-
+      console.log("\n");
       programStart();
     }
   );
@@ -53,7 +56,12 @@ function viewEmployees() {
   let sql = "SELECT * FROM V_VIEW_EMPLOYEES;";
   connection.query(sql, (err, res) => {
     if (err) throw err;
+    //line break to keep things spaced out
+    console.log("\n");
+    //results
     console.table(asTable(res));
+    // line break
+    console.log("\n");
     programStart();
   });
 }
@@ -65,9 +73,13 @@ function viewMgrs() {
     "SELECT Distinct manager_id, manager FROM V_VIEW_EMPLOYEES order by manager";
   connection.query(sql, (err, res) => {
     if (err) throw err;
+    //line break to keep things spaced out
+    console.log("\n");
+
     console.table(asTable(res));
-    console.log(res);
-    //return JSON.parse(res);
+
+    //line break to keep things spaced out
+    console.log("\n");
     programStart();
   });
 }
@@ -76,7 +88,12 @@ viewDepts = () => {
   let sql = "Select * from tblDepartment order by name;";
   connection.query(sql, (err, res) => {
     if (err) throw err;
+    //line break to keep things spaced out
+    console.log("\n");
+
     console.table(asTable(res));
+    //line break to keep things spaced out
+    console.log("\n");
     programStart();
   });
 };
@@ -86,7 +103,11 @@ function viewTitles() {
   let sql = "Select * from tblRole;";
   connection.query(sql, (err, res) => {
     if (err) throw err;
+    //line break to keep things spaced out
+    console.log("\n");
     console.table(asTable(res));
+    //line break to keep things spaced out
+    console.log("\n");
     programStart();
   });
 }
@@ -119,7 +140,10 @@ viewEmpByDept = () => {
           ],
           (err, res) => {
             if (err) throw err;
+            //line break to keep things spaced out
+            console.log("\n");
             console.table(asTable(res));
+            console.log("\n");
             programStart();
           }
         );
