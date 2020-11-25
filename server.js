@@ -26,6 +26,7 @@ connection.connect((err) => {
   console.log("connected as id: " + connection.threadId);
   //   queryAllEmployees();
 
+  //ASCII ART for fanciness
   figlet(
     "Employee Manager",
     {
@@ -90,10 +91,142 @@ function viewTitles() {
   });
 }
 
-addEmp = () => {};
+// functions for adding new employees
+insertNewEmp = () => {
+  let sqlTitle =
+    "select id as value, title as name from tblRole order by name;";
+  let sqlMgrs =
+    "select distinct manager_id as value, manager as name from v_view_employees  order by name;";
+  let titleArray = [];
+  let mgrArray = [];
 
-removeEmp = () => {};
+  //   get list of titles
+  connection.query(sqlTitle, (err, res) => {
+    if (err) throw err;
+    for (let i = 0; i < res.length; i++) {
+      titleArray.push(res[i]);
+    }
+  });
+  //   get list of managers
+  connection.query(sqlMgrs, (err, res) => {
+    if (err) throw err;
+    for (let i = 0; i < res.length; i++) {
+      mgrArray.push(res[i]);
+    }
+  });
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        name: "firstName",
+        message: "Enter Employee First Name:",
+      },
+      {
+        type: "input",
+        name: "lastName",
+        message: "Enter Employee Last Name",
+      },
+      {
+        type: "list",
+        name: "title",
+        message: "Select Employees Title:",
+        choices: titleArray,
+      },
+      {
+        type: "list",
+        name: "manager",
+        message: "Select Employee Manager",
+        choices: mgrArray,
+      },
+    ])
+    .then((answers) => {
+      //   console.log(answers);
+      //   insertNewEmp(
+      //     answers.firstName,
+      //     answers.lastName,
+      //     answers.title,
+      //     answers.manager
+      //   );
 
+      let sqlInsert = "Insert tblEmployees SET ?;";
+      connection.query(
+        sqlInsert,
+        [
+          {
+            first_name: answers.firstName,
+            last_name: answers.lastName,
+            role_id: answers.title,
+            manager_id: answers.manager,
+          },
+        ],
+        (err, res) => {
+          if (err) throw err;
+          console.log("New Employee Has Been Added!");
+          programStart();
+        }
+      );
+    });
+};
+
+// function for final insert
+function insertNewEmp(firstName, lastName, roleId, managerId) {
+  let sqlInsert = "Insert tblEmployees SET ?;";
+  connection.query(
+    sqlInsert,
+    [
+      {
+        first_name: firstName,
+        last_name: lastName,
+        role_id: roleId,
+        manager_id: managerId,
+      },
+    ],
+    (err, res) => {
+      if (err) throw err;
+      console.log("New Employee Has Been Added!");
+      programStart();
+    }
+  );
+}
+
+// function to delete selected employee
+removeEmp = () => {
+  let sqlEmpList =
+    "Select employeeid as value , employeename as name from v_view_employees order by name;";
+  let empArray = [];
+
+  connection.query(sqlEmpList, (err, res) => {
+    if (err) throw err;
+    for (let i = 0; i < res.length; i++) {
+      empArray.push(res[i]);
+    }
+    inquirer
+      .prompt({
+        type: "list",
+        name: "employees",
+        message: "Which employee would you like to delete?",
+        choices: empArray,
+      })
+      .then((answers) => {
+        let sqlDel = "DELETE From tblEmployees WHERE ?;";
+        connection.query(
+          sqlDel,
+          [
+            {
+              id: answers.employees,
+            },
+          ],
+          (err) => {
+            if (err) throw err;
+            console.log("Employee Has Deleted!");
+            programStart();
+          }
+        );
+      });
+  });
+};
+
+// function that responds to select "Update Employee Manager" from initial drop down
 updateEmpMgr = () => {
   let sql =
     "select employeename as name, employeeid as value from v_view_employees order by employeename;";
@@ -121,6 +254,7 @@ updateEmpMgr = () => {
   });
 };
 
+// function to populate the list of managers to select from when updating an employee
 function selectManager(empId) {
   let sql =
     "select distinct employeename as name , employeeid as value from employees_db.v_view_employees where title like '%manager%' order by name;";
@@ -147,6 +281,7 @@ function selectManager(empId) {
   });
 }
 
+// runs final update statement to change the selected employees manager
 function setEmpMgr(empId, mgrId) {
   let sql = "Update tblEmployees Set ? Where ?;";
   connection.query(
@@ -214,7 +349,7 @@ programStart = () =>
           viewTitles();
           break;
         case "Add Employee":
-          addEmp();
+          insertNewEmp();
           break;
         case "Remove Employee":
           removeEmp();
