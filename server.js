@@ -150,6 +150,44 @@ viewEmpByDept = () => {
       });
   });
 };
+// function for viewing employees of selected manager
+viewEmpByMgr = () => {
+  let sqlDeptList =
+    "Select distinct manager_id as value, manager as name from v_view_employees where manager_id > 0 order by name;";
+  let deptArray = [];
+  connection.query(sqlDeptList, (err, res) => {
+    if (err) throw err;
+    for (let i = 0; i < res.length; i++) {
+      deptArray.push(res[i]);
+    }
+    inquirer
+      .prompt({
+        type: "list",
+        name: "manager",
+        message: "Select manager whose team you would like to display",
+        choices: deptArray,
+      })
+      .then((answers) => {
+        let sqlSelect = "select * from v_view_employees where ?;";
+        connection.query(
+          sqlSelect,
+          [
+            {
+              manager_id: answers.manager,
+            },
+          ],
+          (err, res) => {
+            if (err) throw err;
+            //line break to keep things spaced out
+            console.log("\n");
+            console.table(asTable(res));
+            console.log("\n");
+            programStart();
+          }
+        );
+      });
+  });
+};
 // functions for adding new employees
 insertNewEmp = () => {
   let sqlTitle =
