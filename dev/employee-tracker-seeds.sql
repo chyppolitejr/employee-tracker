@@ -27,6 +27,9 @@ id int auto_increment primary key,
 name varchar(50) not null
 );
 
+CREATE VIEW `employees_db`.`v_view_employees` AS 
+select `E`.`id` AS `employeeid`,`E`.`first_name` AS `first_name`,`E`.`last_name` AS `last_name`,concat(`E`.`last_name`,',',`E`.`first_name`) AS `employeename`,`R`.`title` AS `title`,`R`.`salary` AS `salary`,`D`.`id` AS `department_id`,`D`.`name` AS `department`,concat(`M`.`last_name`,',',`M`.`first_name`) AS `manager`,`E`.`manager_id` AS `manager_id` from (((`employees_db`.`tblemployees` `E` left join `employees_db`.`tblemployees` `M` on((`E`.`manager_id` = `M`.`id`))) left join `employees_db`.`tblrole` `R` on((`E`.`role_id` = `R`.`id`))) left join `employees_db`.`tbldepartment` `D` on((`R`.`department_id` = `D`.`id`)));
+
 /* test data */
 insert into tbldepartment (name)
 values ('Workforce Management'), ('Business Management'),('Security'),('Training'),('Quality Assurance'),('Human Resources'),('Operations'),
@@ -106,3 +109,4 @@ values('Sally','Smith',4,4);
 select * from tbldepartment;
 select * from tblrole;
 select * from tblEmployees;
+select * from v_view_employees;
